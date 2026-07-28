@@ -1,0 +1,12 @@
+# Cache di Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE
+.vscode/
+.idea/
+
+# Dati e Configurazione
+config/
+dataset_test/
