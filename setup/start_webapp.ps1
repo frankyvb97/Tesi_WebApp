@@ -1,3 +1,6 @@
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location (Split-Path -Parent $ScriptDir)
+
 $Host.UI.RawUI.WindowTitle = "Avvio WebApp DINOv3"
 
 Write-Host "==================================================" -ForegroundColor Cyan
@@ -5,7 +8,7 @@ Write-Host "Avvio WebApp - Inferenza DINOv3 Kvasir-v2" -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Cyan
 
 Write-Host "[0/3] Inizializzazione configurazioni..."
-python setup.py
+python setup\setup_env.py
 
 $VENV_DIR = "..\Progetto_Tesi\venv_tesi"
 if (Test-Path "config\config.json") {

@@ -31,8 +31,8 @@ MODELS_DIR_ABS = os.path.normpath(os.path.join(APP_DIR, MODELS_DIR))
 
 MODEL_ID = webapp_config.get("MODEL_ID", "facebook/dinov3-convnext-tiny-pretrain-lvd1689m")
 
-import setup
-setup.setup_all()
+from setup import setup_env
+setup_env.setup_all()
 
 CLASS_NAMES = [
     'dyed-lifted-polyps', 'dyed-resection-margins', 'esophagitis', 

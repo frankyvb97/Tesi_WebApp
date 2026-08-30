@@ -11,9 +11,9 @@ Questa cartella contiene l'interfaccia grafica (WebApp) sviluppata per interagir
 
 ## ⚙️ Configurazione e Avvio
 
-Per avviare la WebApp è sufficiente fare doppio clic sul file `start_webapp.bat`. 
+Per avviare la WebApp è sufficiente fare doppio clic sul file `Start_WebApp.vbs`. 
 La sequenza di avvio è **completamente automatizzata**:
-1. Esegue il file `setup.py` (usando l'installazione globale di Python) che si occupa di generare il file di configurazione locale e di sincronizzare la cartella `dataset_test`, clonando unicamente le immagini che il modello non ha mai visto durante l'addestramento.
+1. Esegue il file `setup/setup_env.py` (usando l'installazione globale di Python) che si occupa di generare il file di configurazione locale e di sincronizzare la cartella `dataset_test`, clonando unicamente le immagini che il modello non ha mai visto durante l'addestramento.
 2. Legge il percorso dell'ambiente virtuale (`VENV_DIR`) dal file di configurazione e lo attiva in automatico.
 3. Lancia il server Flask (`app.py`), che rileva tutti i pesi `fold_*` presenti, instanzia l'Ensemble e prepara l'interfaccia.
 

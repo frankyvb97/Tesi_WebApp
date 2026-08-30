@@ -1,7 +1,8 @@
 import os
 import json
 
-APP_DIR = os.path.dirname(os.path.abspath(__file__))
+SETUP_DIR = os.path.dirname(os.path.abspath(__file__))
+APP_DIR = os.path.dirname(SETUP_DIR)
 WEBAPP_CONFIG_DIR = os.path.join(APP_DIR, "config")
 WEBAPP_CONFIG_PATH = os.path.join(WEBAPP_CONFIG_DIR, "config.json")
 
