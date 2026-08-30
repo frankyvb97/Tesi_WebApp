@@ -31,14 +31,33 @@ Write-Host "[1/3] Attivazione ambiente virtuale Python..."
 . $activate_script
 
 Write-Host "[2/3] Avvio del server Flask in corso..."
+Write-Host "Apertura automatica del browser all'indirizzo http://127.0.0.1:5000..." -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Premere Ctrl+C per fermare il server." -ForegroundColor Yellow
 Write-Host ""
+
+# Background job che attende la disponibilità del server e apre il browser
+Start-Job -ScriptBlock {
+    param($url)
+    $attempts = 0
+    while ($attempts -lt 45) {
+        Start-Sleep -Seconds 1
+        try {
+            $resp = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 1 -ErrorAction SilentlyContinue
+            if ($resp.StatusCode -eq 200) {
+                Start-Process $url
+                break
+            }
+        } catch { }
+        $attempts++
+    }
+} -ArgumentList "http://127.0.0.1:5000" | Out-Null
 
 try {
     python app.py
 }
 finally {
+    Get-Job | Remove-Job -Force -ErrorAction SilentlyContinue
     Write-Host ""
     Write-Host "Server fermato con successo." -ForegroundColor Green
     Read-Host "Premi Invio per terminare"

@@ -157,11 +157,7 @@ def predict():
     return jsonify({"results": results})
 
 if __name__ == "__main__":
-    # Apri il browser dopo 1.5 secondi (dando il tempo a Flask di bindare la porta)
-    def open_browser():
-        webbrowser.open("http://127.0.0.1:5000")
-        
-    Timer(1.5, open_browser).start()
-    
-    # Esegui dalla cartella Progetto_Tesi o WebApp (reloader disattivato per non aprire 2 tab)
-    app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)
+    print("\n" + "="*50)
+    print("  Server Web attivo su: http://127.0.0.1:5000")
+    print("="*50 + "\n")
+    app.run(debug=False, host="127.0.0.1", port=5000, use_reloader=False)

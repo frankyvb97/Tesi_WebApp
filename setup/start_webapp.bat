@@ -28,9 +28,11 @@ echo [1/3] Attivazione ambiente virtuale Python...
 call "%VENV_DIR%\Scripts\activate.bat"
 
 echo [2/3] Avvio del server Flask in corso...
+echo Apertura automatica del browser all'indirizzo http://127.0.0.1:5000...
 echo.
 echo Premere Ctrl+C per fermare il server.
 echo.
+start "" cmd /c "timeout /t 3 /nobreak >nul & start http://127.0.0.1:5000"
 python app.py
 
 echo.
