@@ -1,24 +1,40 @@
-# WebApp di Inferenza DINOv3
+# EndoscopicApp - WebApp di Inferenza DINOv3 Ensemble
 
-Questa cartella contiene l'interfaccia grafica (WebApp) sviluppata per interagire con i modelli addestrati nel progetto di Tesi. L'applicativo è progettato con un'architettura **Full-Stack** che separa nettamente la logica di backend da un'interfaccia utente moderna (Glassmorphism e Dark Mode).
+Questa directory contiene la WebApp completa (**EndoscopicApp**) sviluppata per l'interazione clinica e dimostrativa con i modelli Vision Transformer DINOv3 (ConvNeXt-Tiny) addestrati sul dataset **Kvasir-v2**.
 
-## 🚀 Architettura
-- **Backend (Flask)**: `app.py` si occupa di creare un server locale. Legge le impostazioni dal file `config/config.json` (autogenerato al primo avvio) e carica i modelli in modalità **Ensemble**. L'API `POST /predict` riceve le immagini, le trasforma in tensori e restituisce le predizioni medie basate su tutti i fold caricati in memoria.
-- **Frontend (HTML/CSS/JS)**: I file in `templates/` e `static/` costruiscono l'interfaccia visiva. È stata implementata una logica JavaScript che permette di:
-  - Effettuare l'*upload* o il *Drag & Drop* di una singola foto.
-  - Caricare **in blocco un'intera cartella locale**; il frontend prenderà tutte le immagini contenute e le manderà in parallelo al server Flask.
-  - Costruire dinamicamente una galleria di risultati ("cards") contenenti anteprima dell'immagine, classe predetta e una barra cromatica della confidenza.
+L'applicazione adotta un'architettura **Full-Stack** moderna e reattiva con design system ispirato ad Antigravity (Dark/Light mode, accenti arancioni, glassmorphism e micro-animazioni).
+
+---
+
+## 🏛️ Architettura dell'Applicazione
+
+### 1. Backend (`app.py` - Flask & PyTorch / DirectML)
+- **Caricamento Ensemble 5-Fold**: Rileva dinamicamente tutte le directory `fold_*` presenti nella cartella dei modelli, istanzia i modelli su dispositivo accelerato (`torch-directml` su GPU AMD o CUDA/CPU) ed esegue l'inferenza calcolando la **media probabilistica (Softmax)** dei 5 fold.
+- **Endpoint `/predict`**: Riceve una o più immagini (file singoli o intere cartelle inviate dal client), normalizza i pixel tramite l'Image Processor di Hugging Face e restituisce per ciascun file la classe predetta e la percentuale di confidenza.
+- **Endpoint `/demo`**: Preleva automaticamente immagini campione dal set di test (`dataset_test/kvasir-dataset-v2`), le codifica in base64 e ne esegue l'inferenza immediata per finalità dimostrative.
+
+### 2. Frontend (`templates/index.html`, `static/style.css`, `static/script.js`)
+- **Cronologia Sessioni (Stile Gemini)**: Barra laterale collassabile con gestione dello stato persistente su **IndexedDB** (`Dinov3TesiDB`). Ogni sessione memorizza titolo, timestamp, miniature base64 delle immagini caricate e relativi risultati di classificazione.
+- **Salvataggio Automatico / Manuale**: Interruttore dedicato nella barra superiore con tooltip esplicativo (`?`). Se attivo, salva automaticamente ogni analisi nella cronologia; se disattivato, permette il salvataggio manuale tramite il pulsante "Salva Sessione".
+- **Caricamento Flessibile (File & Cartelle)**: Supporta il drag & drop di immagini singole JPG/PNG o la selezione in blocco di un'intera cartella endoscopica.
+- **Visualizzazione Risultati**: Griglia di card interattive con anteprima dell'immagine, nome file, patologia/reperto diagnosticato e barra cromatica della confidenza (verde per confidenza elevata $\ge 90\%$, arancione standard, giallo per confidenze inferiori al $50\%$).
+- **Esportazione Referti**:
+  - **Esporta HTML**: Genera un file HTML autonomo (*stand-alone*) con stili incorporati e immagini convertite in base64, apribile su qualsiasi dispositivo senza dipendenze esterne.
+  - **Stampa / PDF**: Formattazione ottimizzata per la stampa cartacea o salvataggio PDF tramite regole CSS `@media print`.
+- **Tema Chiaro / Scuro**: Switch animato sincronizzato con `localStorage` e preferenze di sistema del browser.
+
+---
 
 ## ⚙️ Configurazione e Avvio
 
-Per avviare la WebApp è sufficiente fare doppio clic sul file `Start_WebApp.vbs`. 
-La sequenza di avvio è **completamente automatizzata**:
-1. Esegue il file `setup/setup_env.py` (usando l'installazione globale di Python) che si occupa di generare il file di configurazione locale e di sincronizzare la cartella `dataset_test`, clonando unicamente le immagini che il modello non ha mai visto durante l'addestramento.
-2. Legge il percorso dell'ambiente virtuale (`VENV_DIR`) dal file di configurazione e lo attiva in automatico.
-3. Lancia il server Flask (`app.py`), che rileva tutti i pesi `fold_*` presenti, instanzia l'Ensemble e prepara l'interfaccia.
+Per avviare la WebApp è sufficiente fare doppio clic sul file `Start_WebApp.vbs` nella root del progetto oppure eseguire `setup/start_webapp.bat`.
 
-### Il file `config/config.json`
-L'intero applicativo è modulare e **strutturalmente indipendente** dalle altre cartelle. Al primissimo avvio, se inesistente, verrà generato un file `config/config.json` con la seguente struttura:
+### Sequenza di Avvio Automatizzata
+1. Esegue `setup/setup_env.py` per sincronizzare in locale la cartella `dataset_test` clonando esclusivamente le immagini del Test Set (non viste in fase di training).
+2. Attiva l'ambiente virtuale dedicato (`venv_tesi`).
+3. Avvia il server Flask in background ed esegue un polling HTTP su `http://127.0.0.1:5000` per verificare che i modelli siano interamente caricati nella VRAM della GPU prima di aprire il browser predefinito.
+
+### File di Configurazione (`config/config.json`)
 ```json
 {
     "MODEL_ID": "facebook/dinov3-convnext-tiny-pretrain-lvd1689m",
@@ -28,45 +44,37 @@ L'intero applicativo è modulare e **strutturalmente indipendente** dalle altre 
     "DATASET_DIR": "../Datasets/kvasir-dataset-v2"
 }
 ```
-I parametri configurabili sono:
-- **`MODEL_ID`**: L'architettura base scaricata da HuggingFace, necessaria per istanziare i pesi.
-- **`MODELS_DIR`**: La cartella dove sono stati salvati i vari *Fold* addestrati. La WebApp cercherà al suo interno tutte le cartelle che iniziano con `fold_`.
-- **`VENV_DIR`**: Il percorso dell'ambiente virtuale Python con le dipendenze installate (letto ed eseguito dal `.bat`).
-- **`DATASET_SPLIT_PATH`**: Il percorso in cui è salvato il file JSON contenente lo split del dataset (generato durante il training).
-- **`DATASET_DIR`**: La directory radice contenente le immagini del dataset. Il setup estrapola da `DATASET_SPLIT_PATH` *solo* i nomi delle classi e delle immagini, e usa `DATASET_DIR` per ricostruirne il percorso assoluto in maniera pulita, clonandole per i tuoi test manuali.
+*Tutti i percorsi sono configurabili, permettendo di dislocare Dataset, Pesi dei Modelli e WebApp su supporti di memoria o dischi differenti.*
 
-> [!TIP]
-> Modificando questi parametri, è possibile isolare la WebApp, il Dataset e il Progetto di Addestramento su **dischi rigidi e locazioni differenti** senza rompere alcun collegamento!
+---
 
-## 🛠️ Changelog (Diario delle Modifiche)
+## 📋 Changelog delle Implementazioni
 
-Di seguito verranno annotate progressivamente tutte le implementazioni apportate su richiesta dell'utente all'interno della WebApp:
-
-1. **Creazione Iniziale della WebApp**:
-   - Strutturata la cartella per il pattern MVC di Flask (`app.py`, `templates/`, `static/`).
-   - Implementato backend per il caricamento dinamico del modello *DINOv3-ConvNeXt* addestrato e l'estrazione sicura del tensore delle probabilità (Softmax).
-   - Costruito frontend con animazioni CSS, layout a griglia responsivo e logica JS per processare sia file singoli che directory intere, bypassando i limiti di sicurezza nativi dei browser.
+1. **Creazione Base WebApp**:
+   - Struttura MVC con Flask, caricamento DINOv3 ConvNeXt e classificazione multiclasse.
+   - Upload file singoli e intere cartelle tramite input HTML5.
 
 2. **Isolamento dell'Applicativo**:
-   - Su richiesta, l'intera directory `WebApp` è stata spostata *fuori* dalla cartella di addestramento (`Progetto_Tesi`), per posizionarla pulita e indipendente nella root della Tesi. Il file `app.py` è stato rifattorizzato per risalire l'albero delle directory e importare in modo dinamico i pesi e i config dalla directory gemella.
+   - WebApp completamente scorporata e indipendente dalla cartella di addestramento `Progetto_Tesi`.
 
-3. **Tema Chiaro e Scuro Adattivo (con Slider)**:
-   - Implementato uno Slider animato personalizzato per il cambio di tema.
-   - All'interno dello Slider, l'icona si anima e cambia in base alla modalità selezionata (Luna in Dark Mode, Sole in Light Mode).
-   - L'applicazione calcola automaticamente il tema di default del sistema operativo / browser (`prefers-color-scheme`).
-   - Le preferenze vengono salvate e lette dinamicamente tramite JavaScript (`localStorage`), modificando le variabili architetturali di CSS.
+3. **Tema Dark & Light Adattivo**:
+   - Palette scura professionale in stile Antigravity (graphite/slate con accenti arancioni `#f97316`).
+   - Slider di commutazione tema con memorizzazione in `localStorage`.
 
-4. **Script di Avvio Automatico (`start_webapp.bat`)**:
-   - Creato un comodo script eseguibile per Windows (.bat) progettato per azzerare le problematiche di riconfigurazione dopo i riavvii del PC.
-   - Lo script attiva automaticamente l'ambiente virtuale (`venv_tesi`) localizzato nella cartella del progetto di addestramento.
-   - Apre in automatico il browser predefinito all'indirizzo locale (`http://127.0.0.1:5000`) e fa partire contestualmente il server Flask, senza dover digitare comandi manuali nel terminale.
+4. **Avvio Robusto con Polling HTTP**:
+   - Gestione del tempo di caricamento dei 5 fold su GPU DirectML (~10-15s) tramite script PowerShell con verifica dello stato HTTP 200 prima del lancio del browser.
 
-5. **Sincronizzazione Automatica Dataset di Test (`dataset_test`)**:
-   - È stata aggiunta una funzione intelligente all'avvio del server (`app.py`) che verifica l'esistenza e la validità della cartella `dataset_test`.
-   - Il server legge il file `dataset_split.json` generato durante l'addestramento e **copia automaticamente in locale** esclusivamente le immagini che il modello non ha mai visto (il Test Set), mantenendo intatta la struttura delle classi.
-   - In caso di cambio dataset nel file di configurazione, la funzione svuota la vecchia cartella e ricrea quella nuova. Questo garantisce all'utente di avere sempre sottomano (nella WebApp) le immagini corrette per testare e validare l'inferenza.
+5. **Cronologia Sessioni Persistente (IndexedDB)**:
+   - Sidebar in stile Google Gemini con salvataggio locale illimitato di sessioni, miniature e metadati.
+   - Funzionalità di creazione nuova sessione, ridenominazione ed eliminazione rapida.
+   - Pulsante toggle unificato per espansione/riduzione della sidebar.
 
-6. **Configurazione Modulare e Modelli Ensemble**:
-   - Aggiunta la generazione automatica di un file `config/config.json` locale per la WebApp.
-   - Sostituito il caricamento hardcoded del "Fold 1" con un caricamento **Ensemble** dinamico. L'applicativo cerca in automatico tutte le cartelle `fold_*` presenti nella directory specificata, le istanzia e produce predizioni basate sulla media probabilistica di tutti i modelli.
-   - Rimosso qualsiasi puntamento relativo vincolante verso la cartella `Progetto_Tesi`. Ora tutti i percorsi (modelli, venv, split e dataset originale) sono parametri dichiarati nel JSON locale, permettendo all'utente di dislocare Dataset e WebApp su memorie di archiviazione differenti.
+6. **Opzione Salvataggio Automatico**:
+   - Toggle switch in navbar per scegliere tra autosalvataggio immediato o archiviazione manuale.
+   - Tooltip interattivo esplicativo con icona `?`.
+
+7. **Modalità Demo (Test Dataset)**:
+   - Pulsante dedicato nella sidebar per l'esecuzione automatica di inferenza su un batch bilanciato di campioni estratti da `dataset_test`.
+
+8. **Esportazione Multi-Formato**:
+   - Generazione report HTML stand-alone e layout per esportazione PDF/Stampa.

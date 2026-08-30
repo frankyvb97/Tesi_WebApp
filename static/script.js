@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const exportPdfBtn = document.getElementById("export-pdf-btn");
     const saveSessionBtn = document.getElementById("save-session-btn");
     const autosaveCheckbox = document.getElementById("autosave-checkbox");
+    const demoBtn = document.getElementById("demo-btn");
 
     // State
     let currentResults = [];
@@ -291,6 +292,57 @@ document.addEventListener("DOMContentLoaded", () => {
         resultsGrid.innerHTML = '';
         resultsSection.classList.add('hidden');
     });
+
+    // --- Demo Dataset Test Loader ---
+    if (demoBtn) {
+        demoBtn.addEventListener("click", async () => {
+            resultsSection.classList.remove("hidden");
+            loadingSpinner.classList.remove("hidden");
+            const spinnerText = loadingSpinner.querySelector("p");
+            if (spinnerText) {
+                spinnerText.textContent = "Caricamento e analisi delle immagini Demo dal dataset di test...";
+            }
+
+            try {
+                const response = await fetch("/demo");
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentResults = data.results;
+                    renderResults(currentResults);
+
+                    const now = new Date();
+                    const defaultTitle = `Demo Test Dataset (${currentResults.length} foto)`;
+                    currentSessionTitle = defaultTitle;
+
+                    if (autosaveCheckbox && autosaveCheckbox.checked) {
+                        currentSessionId = `session_${Date.now()}`;
+                        activeSessionNameEl.textContent = defaultTitle;
+                        await dbSaveSession({
+                            id: currentSessionId,
+                            title: currentSessionTitle,
+                            timestamp: Date.now(),
+                            results: currentResults
+                        });
+                        await loadHistorySidebar();
+                    } else {
+                        currentSessionId = null;
+                        activeSessionNameEl.textContent = `${defaultTitle} • Non salvata`;
+                    }
+                } else {
+                    alert("Errore durante il caricamento demo: " + (data.error || "Sconosciuto"));
+                }
+            } catch (err) {
+                console.error("Errore fetch demo:", err);
+                alert("Errore di rete durante il caricamento della demo.");
+            } finally {
+                loadingSpinner.classList.add("hidden");
+                if (spinnerText) {
+                    spinnerText.textContent = "Elaborazione tramite Ensemble DINOv3 in corso...";
+                }
+            }
+        });
+    }
 
     function handleFiles(files) {
         const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));

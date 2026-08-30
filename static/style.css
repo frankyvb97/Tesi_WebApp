@@ -184,6 +184,9 @@ body {
 
 .sidebar-actions {
     padding: 1rem 0.85rem 0.5rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
 }
 
 .btn-new-chat {
@@ -211,6 +214,33 @@ body {
 .btn-new-chat svg {
     width: 16px;
     height: 16px;
+}
+
+.btn-sidebar-demo {
+    width: 100%;
+    background: rgba(249, 115, 22, 0.08);
+    border: 1px solid rgba(249, 115, 22, 0.25);
+    color: var(--primary-color);
+    padding: 0.65rem 1rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.825rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-sidebar-demo:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #ffffff;
+    box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.btn-sidebar-demo svg {
+    fill: currentColor;
 }
 
 .sidebar-section-title {
@@ -536,6 +566,39 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Demo Button */
+.btn-demo {
+    background: rgba(249, 115, 22, 0.12);
+    border: 1px solid rgba(249, 115, 22, 0.4);
+    color: var(--primary-color);
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.btn-demo:hover {
+    background: var(--primary-color);
+    color: #ffffff;
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 10px var(--primary-glow);
+    transform: translateY(-1px);
+}
+
+.btn-demo:active {
+    transform: translateY(1px);
+}
+
+.btn-demo svg {
+    fill: currentColor;
 }
 
 .btn-icon {

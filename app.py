@@ -3,6 +3,8 @@ import json
 import torch
 import shutil
 import webbrowser
+import base64
+import io
 from threading import Timer
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
@@ -151,6 +153,63 @@ def predict():
         except Exception as e:
             results.append({
                 "filename": os.path.basename(file.filename),
+                "error": str(e)
+            })
+            
+    return jsonify({"results": results})
+
+@app.route("/demo", methods=["POST", "GET"])
+def run_demo():
+    if not ensemble_models or not processor:
+        return jsonify({"error": "Il modello Ensemble non è caricato."}), 500
+        
+    test_dir = os.path.join(APP_DIR, "dataset_test")
+    if not os.path.exists(test_dir):
+        return jsonify({"error": "Cartella dataset_test non trovata."}), 404
+        
+    # Seleziona fino a 2 immagini per ogni classe presente nella cartella di test
+    selected_files = []
+    for root, dirs, files in os.walk(test_dir):
+        image_files = sorted([f for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
+        if image_files:
+            selected_files.append(os.path.join(root, image_files[0]))
+            if len(image_files) > 1 and len(selected_files) < 16:
+                selected_files.append(os.path.join(root, image_files[1]))
+                
+    if not selected_files:
+        return jsonify({"error": "Nessuna immagine trovata in dataset_test."}), 404
+        
+    results = []
+    for filepath in selected_files:
+        try:
+            with open(filepath, "rb") as img_f:
+                raw_bytes = img_f.read()
+                
+            b64_str = f"data:image/jpeg;base64,{base64.b64encode(raw_bytes).decode('utf-8')}"
+            image = Image.open(io.BytesIO(raw_bytes)).convert("RGB")
+            pixel_values = transform(image).unsqueeze(0).to(device)
+            
+            with torch.no_grad():
+                all_probs = []
+                for model_fold in ensemble_models:
+                    outputs = model_fold(pixel_values=pixel_values)
+                    probs = torch.nn.functional.softmax(outputs.logits, dim=1)
+                    all_probs.append(probs)
+                    
+                avg_probs = torch.mean(torch.stack(all_probs), dim=0)
+                confidence, predicted_class_idx = torch.max(avg_probs, dim=1)
+                predicted_class = id2label[predicted_class_idx.item()]
+                conf_val = round(confidence.item() * 100, 2)
+                
+            results.append({
+                "filename": os.path.basename(filepath),
+                "predicted_class": predicted_class,
+                "confidence": conf_val,
+                "imageData": b64_str
+            })
+        except Exception as e:
+            results.append({
+                "filename": os.path.basename(filepath),
                 "error": str(e)
             })
             
