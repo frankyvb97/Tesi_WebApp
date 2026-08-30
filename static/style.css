@@ -1029,15 +1029,42 @@ input:checked + .slider .icon-container {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- RESPONSIVE & MOBILE --- */
-@media (max-width: 768px) {
+/* --- SIDEBAR BACKDROP (Tablet & Mobile) --- */
+.sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 99;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+    pointer-events: none;
+}
+
+.sidebar-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* --- RESPONSIVE BREAKPOINTS (PC, Tablet & Mobile) --- */
+
+/* 1. TABLET & LAPTOP PICCOLI (769px - 1024px) */
+@media (max-width: 1024px) {
     .sidebar {
         position: fixed;
         left: 0;
         top: 0;
         bottom: 0;
         transform: translateX(-100%);
-        width: 280px;
+        width: 290px;
+        z-index: 1000;
+        box-shadow: var(--shadow-panel);
     }
     
     .sidebar.open {
@@ -1046,6 +1073,189 @@ input:checked + .slider .icon-container {
     
     .sidebar.collapsed {
         transform: translateX(-100%);
+    }
+
+    .main-workspace {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .container {
+        padding: 1.5rem 1.25rem 3rem 1.25rem;
+    }
+
+    .results-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1rem;
+    }
+
+    .active-session-name {
+        max-width: 220px;
+    }
+}
+
+/* 2. SMARTPHONE E SCHERMI MOBILI MEDI (481px - 768px) */
+@media (max-width: 768px) {
+    .top-nav {
+        padding: 0.65rem 1rem;
+        gap: 0.5rem;
+    }
+
+    .active-session-name {
+        max-width: 150px;
+        font-size: 0.85rem;
+    }
+
+    .control-label-text {
+        display: none; /* Risparmia spazio su mobile mantenendo il toggle switch */
+    }
+
+    .container {
+        padding: 1.25rem 1rem 3rem 1rem;
+    }
+
+    .page-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .page-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .page-header p {
+        font-size: 0.9rem;
+    }
+
+    .glass-panel {
+        padding: 1.75rem 1.25rem;
+    }
+
+    .drop-zone .icon {
+        width: 44px;
+        height: 44px;
+        padding: 8px;
+    }
+
+    .drop-zone h3 {
+        font-size: 1.15rem;
+    }
+
+    .drop-zone p {
+        font-size: 0.85rem;
+    }
+
+    .buttons {
+        width: 100%;
+        gap: 0.65rem;
+    }
+
+    .buttons .btn {
+        flex: 1 1 calc(50% - 0.65rem);
+        padding: 0.6rem 0.85rem;
+        font-size: 0.85rem;
+    }
+
+    .results-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.85rem;
+    }
+
+    .results-title-group {
+        justify-content: space-between;
+    }
+
+    .export-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .export-actions .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.55rem 0.65rem;
+        font-size: 0.8rem;
+    }
+
+    .results-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.85rem;
+    }
+
+    .result-img {
+        height: 135px;
+    }
+
+    .result-info {
+        padding: 0.75rem;
+    }
+
+    .result-class {
+        font-size: 0.95rem;
+        margin-bottom: 0.45rem;
+    }
+}
+
+/* 3. SMARTPHONE COMPATTI E SCHERMI PICCOLI (<= 480px) */
+@media (max-width: 480px) {
+    .top-nav {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .active-session-name {
+        max-width: 110px;
+        font-size: 0.775rem;
+    }
+
+    .nav-left {
+        gap: 0.5rem;
+    }
+
+    .nav-right {
+        gap: 0.5rem;
+    }
+
+    .container {
+        padding: 1rem 0.65rem 4rem 0.65rem;
+    }
+
+    .page-header h1 {
+        font-size: 1.45rem;
+    }
+
+    .glass-panel {
+        padding: 1.25rem 0.85rem;
+        border-radius: 12px;
+    }
+
+    .buttons .btn {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .export-actions {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.4rem;
+    }
+
+    .export-actions .btn span {
+        font-size: 0.75rem;
+    }
+
+    .results-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .result-img {
+        height: 170px;
+    }
+
+    .sidebar {
+        width: 85vw;
+        max-width: 300px;
     }
 }
 
