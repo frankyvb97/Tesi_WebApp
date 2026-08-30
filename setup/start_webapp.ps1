@@ -1,10 +1,10 @@
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location (Split-Path -Parent $ScriptDir)
 
-$Host.UI.RawUI.WindowTitle = "Avvio WebApp DINOv3"
+$Host.UI.RawUI.WindowTitle = "Avvio EndoscopicApp"
 
 Write-Host "==================================================" -ForegroundColor Cyan
-Write-Host "Avvio WebApp - Inferenza DINOv3 Kvasir-v2" -ForegroundColor Cyan
+Write-Host "Avvio WebApp - EndoscopicApp" -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Cyan
 
 Write-Host "[0/3] Inizializzazione configurazioni..."

@@ -1,8 +1,8 @@
 @echo off
 cd /d "%~dp0.."
-title Avvio WebApp DINOv3
+title Avvio EndoscopicApp
 echo ==================================================
-echo Avvio WebApp - Inferenza DINOv3 Kvasir-v2
+echo Avvio WebApp - EndoscopicApp
 echo ==================================================
 
 echo [0/3] Inizializzazione configurazioni...
